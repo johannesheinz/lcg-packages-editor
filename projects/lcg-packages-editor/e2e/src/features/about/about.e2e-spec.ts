@@ -8,7 +8,7 @@ describe('About Page', () => {
 
   it('should display main heading', () => {
     page.navigateTo();
-    expect(page.getParagraphText()).toEqual('ANGULAR NGRX MATERIAL STARTER');
+    expect(page.getParagraphText()).toEqual('LCG PACKAGES EDITOR');
   });
 
   it('should display "Geting Started" section', () => {

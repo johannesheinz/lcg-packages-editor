@@ -23,8 +23,7 @@ import {
 import { Contact, Package } from '../package.model';
 import {
   actionPackageDeleteOne,
-  actionPackageUpsertOne,
-  actionPackagesRetrieve
+  actionPackageUpsertOne
 } from '../packages.actions';
 import {
   selectSelectedPackage,

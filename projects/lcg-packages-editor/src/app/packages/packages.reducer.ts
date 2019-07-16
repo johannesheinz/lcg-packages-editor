@@ -33,6 +33,7 @@ let pkg_licenses_counting = {};
 let pkg_languages = [];
 let pkg_categories = [];
 let pkg_entities = {};
+
 packages.forEach(pkg => {
   pkg_ids.push(pkg.name);
   if (pkg.license && !blacklist.includes(pkg.license.toLowerCase())) {
@@ -51,7 +52,9 @@ packages.forEach(pkg => {
   }
   pkg_entities[pkg.name] = pkg;
 });
+
 let pkg_licenses = [];
+
 Object.entries(pkg_licenses_counting).forEach(([key, value]) => {
   if (value > 1) {
     pkg_licenses.push(key);
@@ -95,49 +98,14 @@ export const initialState: PackageState = packageAdapter.getInitialState({
   // }
 });
 
-// const reducer = createReducer(
-//   initialState,
-//   on(actionPackageUpsertOne, (state, { pkg }) => packageAdapter.upsertOne(pkg, state)),
-//   on(actionPackageDeleteOne, (state, { name }) => packageAdapter.removeOne(name, state))
-// );
-
-export const initialState2: PackageState = packageAdapter.getInitialState({
-  ids: [],
-  categories: [],
-  licenses: [],
-  languages: [],
-  entities: [],
-  loading: false,
-  packages: null,
-  error: null
-});
-
 const reducer = createReducer(
-  initialState2,
+  initialState,
   on(actionPackageUpsertOne, (state, { pkg }) =>
     packageAdapter.upsertOne(pkg, state)
   ),
   on(actionPackageDeleteOne, (state, { name }) =>
     packageAdapter.removeOne(name, state)
-  ),
-  on(actionPackagesRetrieve, (state, {}) => ({
-    ...state,
-    loading: true,
-    packages: null,
-    error: null
-  })),
-  on(actionPackagesRetrieveSuccess, (state, { packages }) => ({
-    ...state,
-    loading: false,
-    packages,
-    error: null
-  })),
-  on(actionPackagesRetrieveError, (state, { error }) => ({
-    ...state,
-    loading: false,
-    packages: null,
-    error
-  }))
+  )
 );
 
 export function packageReducer(

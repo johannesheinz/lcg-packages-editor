@@ -14,7 +14,6 @@ import { reducers } from '../core/core.state';
 
 import { PackageListComponent } from './package-list/package-list.component';
 import { PackagesRoutingModule } from './packages-routing.module';
-import { PackagesService } from './packages.service';
 import { PackagesEffects } from './packages.effects';
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -42,7 +41,6 @@ export function HttpLoaderFactory(http: HttpClient) {
       isolate: true
     }),
     EffectsModule.forFeature([PackagesEffects])
-  ],
-  providers: [PackagesService]
+  ]
 })
 export class PackagesModule {}

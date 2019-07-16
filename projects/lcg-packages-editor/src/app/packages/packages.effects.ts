@@ -22,7 +22,7 @@ import {
   actionPackagesRetrieveSuccess,
   actionPackagesRetrieveError
 } from './packages.actions';
-import { PackagesService } from './packages.service';
+
 import { State } from './package.model';
 
 @Injectable()
@@ -30,7 +30,6 @@ export class PackagesEffects {
   constructor(
     private actions$: Actions,
     private store: Store<State>,
-    private service: PackagesService,
     private localStorageService: LocalStorageService
   ) {}
 
@@ -44,21 +43,5 @@ export class PackagesEffects {
         )
       ),
     { dispatch: false }
-  );
-
-  retrievePackages = createEffect(() => ({ debounce = 500 } = {}) =>
-    this.actions$.pipe(
-      ofType(actionPackagesRetrieve),
-      tap(packagesState =>
-        this.localStorageService.setItem('PACKAGES', packagesState)
-      ),
-      debounceTime(debounce),
-      switchMap(action =>
-        this.service.retrievePackages().pipe(
-          map(packages => actionPackagesRetrieveSuccess({ packages })),
-          catchError(error => of(actionPackagesRetrieveError({ error })))
-        )
-      )
-    )
   );
 }

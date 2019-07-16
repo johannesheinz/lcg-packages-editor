@@ -13,10 +13,12 @@ export const selectTotalPackages = createSelector(
   selectPackagesState,
   selectTotal
 );
+
 export const selectAllPackages = createSelector(
   selectPackagesState,
   selectAll
 );
+
 export const selectPackagesEntities = createSelector(
   selectPackagesState,
   selectEntities

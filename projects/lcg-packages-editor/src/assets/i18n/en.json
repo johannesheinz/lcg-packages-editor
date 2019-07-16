@@ -34,6 +34,7 @@
   "anms.menu.about": "About",
   "anms.menu.examples": "Examples",
   "anms.menu.features": "Features",
+  "anms.menu.packages": "Packages",
   "anms.menu.login": "Sign in",
   "anms.menu.logout": "Logout",
   "anms.menu.settings": "Settings",
@@ -60,5 +61,17 @@
   "anms.settings.themes.title": "Themes",
   "anms.settings.title": "Settings",
   "anms.title.long": "LCG Packages Editor",
-  "anms.title.short": "Angular Starter"
+  "anms.title.short": "LCG Packages",
+  "lcg.pkg.name": "Name",
+  "lcg.pkg.fullname": "Full Name",
+  "lcg.pkg.license": "License",
+  "lcg.pkg.language": "Programming Language",
+  "lcg.pkg.description": "Description",
+  "lcg.pkg.homepage": "Homepage",
+  "lcg.pkg.category": "Category",
+  "lcg.pkg.contacts": "Contacts",
+  "lcg.pkg.contacts.name": "Name",
+  "lcg.pkg.contacts.email": "Email or Website",
+  "lcg.pkg.save": "Save",
+  "lcg.pkg.cancel": "Cancel"
 }

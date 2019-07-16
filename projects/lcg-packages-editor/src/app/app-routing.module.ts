@@ -1,10 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 
+import { PackageListComponent } from './packages/package-list/package-list.component';
+
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'about',
+    redirectTo: 'packages',
     pathMatch: 'full'
   },
   {
@@ -30,8 +32,18 @@ const routes: Routes = [
       import('./features/examples/examples.module').then(m => m.ExamplesModule)
   },
   {
+    path: 'packages',
+    loadChildren: () =>
+      import('./packages/packages.module').then(m => m.PackagesModule)
+  },
+  {
+    path: 'packages/:name',
+    loadChildren: () =>
+      import('./packages/packages.module').then(m => m.PackagesModule)
+  },
+  {
     path: '**',
-    redirectTo: 'about'
+    redirectTo: 'packages'
   }
 ];
 

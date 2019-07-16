@@ -26,5 +26,27 @@
         </mat-card-actions>
       </mat-card>
     </div>
+
+    <div *ngFor="let package of packages" class="col-md-6 col-lg-4" [ngClass]="routeAnimationsElements">
+      <mat-card>
+        <mat-card-title>
+          <code *ngIf="package.version">{{package.version}}</code>{{package.name | translate}}
+        </mat-card-title>
+        <mat-card-subtitle rtl>
+          {{ package.description | translate }}
+        </mat-card-subtitle>
+        <mat-card-actions>
+          <a *ngIf="package.homepage" mat-icon-button [href]="package.homepage" target="_blank">
+            <fa-icon [icon]="['fab','github']"></fa-icon>
+          </a>
+          <a mat-button [href]="package.license" target="_blank">
+            <fa-icon icon="book"></fa-icon>{{ 'anms.features.documentation' | translate }}
+          </a>
+          <a *ngIf="package.language" mat-button [href]="package.language" target="_blank">
+            <fa-icon [icon]="['fab','medium-m']"></fa-icon>{{ 'anms.features.guide' | translate }}
+          </a>
+        </mat-card-actions>
+      </mat-card>
+    </div>
   </div>
 </div>

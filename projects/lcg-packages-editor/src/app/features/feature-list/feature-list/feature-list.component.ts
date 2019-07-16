@@ -3,6 +3,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ROUTE_ANIMATIONS_ELEMENTS } from '../../../core/core.module';
 
 import { Feature, features } from '../feature-list.data';
+import { Contact, Package, packages } from '../packages-list.data';
 
 @Component({
   selector: 'anms-feature-list',
@@ -13,6 +14,7 @@ import { Feature, features } from '../feature-list.data';
 export class FeatureListComponent implements OnInit {
   routeAnimationsElements = ROUTE_ANIMATIONS_ELEMENTS;
   features: Feature[] = features;
+  packages: Package[] = packages;
 
   ngOnInit() {}
 

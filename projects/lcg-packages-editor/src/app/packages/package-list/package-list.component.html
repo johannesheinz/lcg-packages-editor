@@ -1,0 +1,259 @@
+<div class="container" rtl>
+  <h1>Edit {{ packageCount$ | async }} Packages from LCG Releases</h1>
+  <div class="row">
+    <div class="col-md-4">
+      <!-- Upload -->
+      <input style="display: none" type="file" (change)="onFileChanged($event)" #fileInput>
+      <button mat-raised-button color="primary" (click)="fileInput.click()" style="width: 100%;">
+        <fa-icon icon="upload"></fa-icon> 
+        Upload <code>packages.json</code>
+      </button>
+      <!-- Search -->
+      <div class="icon-form-field">
+        <mat-icon color="accent">
+          <fa-icon icon="search" color="accent"></fa-icon>
+        </mat-icon>
+        <mat-form-field style="widows: 85%">
+          <input matInput type="text" placeholder="Filter package list" aria-label="Search" #searchInput>
+        </mat-form-field>
+        <button mat-icon-button (click)="searchInput.value = ''">
+          <fa-icon icon="times" [matTooltip]="'anms.examples.crud.tooltip.deselect' | translate"
+            matTooltipPosition="above">
+          </fa-icon>
+        </button>
+      </div>
+      <!-- Package list -->
+      <mat-list style="overflow: auto; max-height: 800px;">
+        <mat-list-item *ngFor="let package of packages$ | async" [ngClass]="{routeAnimationsElements: true, 'selected': package.name === selectedPackageName, 'incomplete': isIncomplete(package)}" (click)=select(package) >
+          <h3 matLine>
+            <strong>{{package.name}}</strong>
+            <mat-icon *ngIf="isIncomplete(package)" color="warn" style="float: right;">
+              <fa-icon icon="exclamation" color="warn"></fa-icon>
+            </mat-icon>
+          </h3>
+          <p matLine>
+            <em>{{ package.category | uppercase }}</em> &mdash; {{ package.language }} &mdash; {{ package.license }}
+          </p>
+          <mat-divider [inset]="false"></mat-divider>
+        </mat-list-item>
+      </mat-list>    
+      <!-- <mat-card *ngFor="let package of packages$ | async" [ngClass]="routeAnimationsElements" (click)=select(package)>
+        <h3>{{package.name}}</h3>
+        <small>{{package.description}}</small>
+      </mat-card> -->
+      <p *ngIf="(packages$ | async)?.length === 0">{{'anms.examples.crud.empty' | translate}}</p>
+      <!-- <button type="button" mat-fab color="primary" class="add" [ngClass]="routeAnimationsElements"
+        *ngIf="!isEditing" (click)="addNew(packageForm)">
+        <fa-icon icon="folder"></fa-icon>
+      </button> -->
+      <!-- Toggle -->
+      <div style="margin: 25px 0;">
+        <mat-placeholder>Display only incomplete packages &nbsp;</mat-placeholder>
+        <mat-slide-toggle
+          [checked]="displayOnlyIncompletePackages"
+          (change)="onDisplayOnlyIncompletePackagesToggle($event)">
+        </mat-slide-toggle>
+      </div>
+      <!-- Download -->
+      <a mat-raised-button color="primary" style="width: 100%;" title="Download packages.json" [href]="downloadHref" download="packages.json">
+        <fa-icon icon="download"></fa-icon>
+        Download current state as JSON
+      </a>
+      <!-- <button mat-raised-button color="primary"  style="width: 100%;">
+        <fa-icon icon="download"></fa-icon>
+        Download current state as JSON
+      </button> -->
+    </div>
+    <div class="col-md-8">
+
+      <p style="margin-top: 25px;">&nbsp;</p>
+
+      <span class="d-flex justify-content-between">
+        <span class="d-flex justify-content-end">
+          <span *ngIf="selectedPackage$ | async as selectedPackage">
+            <button mat-icon-button color="accent" *ngIf="!isEditing">
+              <fa-icon icon="edit" (click)="edit(selectedPackage)" [matTooltip]="'anms.examples.crud.tooltip.edit' | translate"
+                matTooltipPosition="above">
+              </fa-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="delete(selectedPackage)">
+              <fa-icon icon="trash" [matTooltip]="'anms.examples.crud.tooltip.delete' | translate"
+                matTooltipPosition="above">
+              </fa-icon>
+            </button>
+            <button mat-icon-button (click)="deselect()">
+              <fa-icon icon="times" [matTooltip]="'anms.examples.crud.tooltip.deselect' | translate"
+                matTooltipPosition="above">
+              </fa-icon>
+            </button>
+          </span>
+        </span>
+      </span>
+
+      <ng-container *ngIf="!isEditing">
+        <div [ngClass]="routeAnimationsElements" *ngIf="selectedPackage$ | async as selectedPackage; else noselectedPackageTmpl">
+          <h3>{{ selectedPackage.name }}</h3>
+          <mat-divider></mat-divider>
+          <p>{{ selectedPackage.description }}</p>
+          <i>{{ selectedPackage.language }}</i>
+          <i>{{ selectedPackage.license }}</i>
+          <p>{{ selectedPackage.homepage }}</p>
+          <a href="http://lcginfo.cern.ch/pkg/{{ selectedPackage.name }}/" target="_blank">&rarr; open in <strong>LCG Info</strong></a>
+        </div>
+
+        <ng-template #noselectedPackageTmpl>
+          <p [ngClass]="routeAnimationsElements">
+            {{'anms.examples.crud.text' | translate }} <code>@ngrx/entity</code>.
+          </p>
+        </ng-template>
+      </ng-container>
+
+      <form #packageForm="ngForm" [formGroup]="packageFormGroup" [style.display]="isEditing ? 'block' : 'none'" [ngClass]="routeAnimationsElements">
+        <div class="row">
+          <mat-form-field class="col">
+            <input matInput placeholder="{{ 'lcg.pkg.name' | translate }}" formControlName="name" required autofocus>
+            <mat-error *ngIf="packageFormGroup.get('name').invalid">
+              {{ 'lcg.pkg.name' | translate }}
+              {{ 'anms.examples.crud.error' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="col">
+            <input matInput placeholder="{{ 'lcg.pkg.fullname' | translate }}" formControlName="fullname" required>
+            <mat-error *ngIf="packageFormGroup.get('fullname').hasError('required')">
+              {{ 'lcg.pkg.fullname' | translate }}
+              {{ 'anms.examples.crud.error' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="col">
+            <input matInput type="url" placeholder="{{ 'lcg.pkg.homepage' | translate }}" formControlName="homepage" required>
+            <mat-error *ngIf="packageFormGroup.get('homepage').hasError('required')">
+              {{ 'lcg.pkg.homepage' | translate }}
+              {{ 'anms.examples.crud.error' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="col">
+            <input matInput type="text" placeholder="{{ 'lcg.pkg.category' | translate }}" formControlName="category" [matAutocomplete]="autoCategory" required>
+            <mat-autocomplete #autoCategory="matAutocomplete">
+              <mat-option *ngFor="let option of filteredCategories | async" [value]="option">
+                {{option}}
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="packageFormGroup.get('category').hasError('required')">
+              {{ 'lcg.pkg.category' | translate }}
+              {{ 'anms.examples.crud.error' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="col">
+            <input matInput type="text" placeholder="{{ 'lcg.pkg.license' | translate }}" formControlName="license" [matAutocomplete]="autoLicense" required>
+            <mat-autocomplete #autoLicense="matAutocomplete">
+              <mat-option *ngFor="let option of filteredLicenses | async" [value]="option">
+                {{option}}
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="packageFormGroup.get('license').hasError('required')">
+              {{ 'lcg.pkg.license' | translate }}
+              {{ 'anms.examples.crud.error' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="col">
+            <input matInput type="text" placeholder="{{ 'lcg.pkg.language' | translate }}" formControlName="language" [matAutocomplete]="autoLanguage" required>
+            <mat-autocomplete #autoLanguage="matAutocomplete">
+              <mat-option *ngFor="let option of filteredLanguages | async" [value]="option">
+                {{option}}
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="packageFormGroup.get('language').hasError('required')">
+              {{ 'lcg.pkg.language' | translate }}
+              {{ 'anms.examples.crud.error' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <mat-form-field class="col">
+            <textarea matInput placeholder="{{ 'lcg.pkg.description' | translate }}" formControlName="description" rows="3"></textarea>
+            <mat-error *ngIf="packageFormGroup.get('description').invalid">
+              {{ 'lcg.pkg.description' | translate }}
+              {{ 'anms.examples.crud.error' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="row">
+          <div class="col-12 d-flex justify-content-between">
+            <button (click)="save()" mat-raised-button color="primary">
+              {{'lcg.pkg.save' | translate }}
+            </button>
+            <button (click)="cancelEditing()" mat-raised-button>
+              {{'lcg.pkg.cancel' | translate }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- <div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h1 rtl class="main-heading">LCG CMake PACKAGES</h1>
+    </div>
+  </div>
+  <div class="row align-items-end">
+  <mat-list>
+    <div *ngFor="let package of packages" class="col-md-6 col-lg-4" [ngClass]="routeAnimationsElements">
+      <mat-list-item>
+        <a matLine [href]="package.homepage">{{ package.name }}</a>
+        <button mat-icon-button color="accent" *ngIf="!isEditing">
+          <fa-icon icon="edit" (click)="edit(package)" [matTooltip]="'anms.examples.crud.tooltip.edit' | translate" matTooltipPosition="above"></fa-icon>
+        </button>
+      </mat-list-item>
+      <fa-icon icon="edit" (click)="edit(package)" [matTooltip]="'anms.examples.crud.tooltip.edit' | translate" matTooltipPosition="above"></fa-icon>
+      <h3 matLine> {{package.license}} </h3>
+      <p matLine>
+        <span> {{package.name}} </span>
+        <span class="demo-2"> -- {{package.description}} </span>
+      </p>
+      <mat-divider [inset]="false"></mat-divider>
+    </div>
+    </mat-list>
+
+    <div *ngFor="let package of packages" class="col-md-6 col-lg-8" [ngClass]="routeAnimationsElements">
+      <mat-card>
+        <mat-card-title>
+          <code *ngIf="package.version">{{package.version}}</code>{{package.name | translate}}
+        </mat-card-title>
+        <mat-card-subtitle rtl>
+          {{ package.description | translate }}
+        </mat-card-subtitle>
+        <mat-card-actions>
+          <a *ngIf="package.homepage" mat-icon-button [href]="package.homepage" target="_blank">
+            <fa-icon [icon]="['fab','github']"></fa-icon>
+          </a>
+          <a mat-button [href]="package.license" target="_blank">
+            <fa-icon icon="book"></fa-icon>{{ 'anms.features.documentation' | translate }}
+          </a>
+          <a *ngIf="package.language" mat-button [href]="package.language" target="_blank">
+            <fa-icon [icon]="['fab','medium-m']"></fa-icon>{{ 'anms.features.guide' | translate }}
+          </a>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div> -->

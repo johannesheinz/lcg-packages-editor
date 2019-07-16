@@ -21,12 +21,9 @@ import {
   AppState,
   reducers,
   metaReducers,
-  selectRouterState
+  selectRouterState,
+  selectPackagesState
 } from './core.state';
-import { AuthEffects } from './auth/auth.effects';
-import { selectIsAuthenticated, selectAuth } from './auth/auth.selectors';
-import { authLogin, authLogout } from './auth/auth.actions';
-import { AuthGuardService } from './auth/auth-guard.service';
 import { TitleService } from './title/title.service';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
@@ -37,8 +34,18 @@ import { AppErrorHandler } from './error-handler/app-error-handler.service';
 import { CustomSerializer } from './router/custom-serializer';
 import { LocalStorageService } from './local-storage/local-storage.service';
 import { HttpErrorInterceptor } from './http-interceptors/http-error.interceptor';
-// import { GoogleAnalyticsEffects } from './google-analytics/google-analytics.effects';
 import { NotificationService } from './notifications/notification.service';
+import { PackagesEffects } from '../packages/packages.effects';
+import {
+  selectAllPackages,
+  selectPackagesEntities,
+  selectSelectedPackage
+} from '../packages/packages.selectors';
+import {
+  PackageActionTypes,
+  actionPackageUpsertOne,
+  actionPackageDeleteOne
+} from '../packages/packages.actions';
 import { SettingsEffects } from './settings/settings.effects';
 import {
   selectSettingsLanguage,
@@ -53,26 +60,28 @@ import {
 } from './settings/settings.actions';
 
 export {
-  TitleService,
-  selectAuth,
-  authLogin,
-  authLogout,
-  routeAnimations,
+  actionPackageDeleteOne,
+  actionPackageUpsertOne,
+  ActionSettingsChangeAnimationsPageDisabled,
+  ActionSettingsChangeLanguage,
+  AnimationsService,
   AppState,
   LocalStorageService,
-  selectIsAuthenticated,
-  ROUTE_ANIMATIONS_ELEMENTS,
-  AnimationsService,
-  AuthGuardService,
-  selectRouterState,
   NotificationService,
+  PackageActionTypes,
+  ROUTE_ANIMATIONS_ELEMENTS,
+  routeAnimations,
+  selectAllPackages,
+  selectEffectiveTheme,
+  selectPackagesEntities,
+  selectPackagesState,
+  selectRouterState,
+  selectSelectedPackage,
+  selectSettingsLanguage,
+  selectSettingsStickyHeader,
   SettingsActions,
   SettingsActionTypes,
-  ActionSettingsChangeLanguage,
-  ActionSettingsChangeAnimationsPageDisabled,
-  selectEffectiveTheme,
-  selectSettingsLanguage,
-  selectSettingsStickyHeader
+  TitleService
 };
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -92,11 +101,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),
     StoreRouterConnectingModule.forRoot(),
-    EffectsModule.forRoot([
-      AuthEffects,
-      SettingsEffects
-      // GoogleAnalyticsEffects
-    ]),
+    EffectsModule.forRoot([PackagesEffects, SettingsEffects]),
     environment.production
       ? []
       : StoreDevtoolsModule.instrument({

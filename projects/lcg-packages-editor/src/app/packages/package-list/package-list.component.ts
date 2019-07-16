@@ -9,7 +9,7 @@ import { map, startWith } from 'rxjs/operators';
 
 import { LocalStorageService } from '../../core/local-storage/local-storage.service';
 
-import { AppState, ROUTE_ANIMATIONS_ELEMENTS } from '../../core/core.module';
+import { ROUTE_ANIMATIONS_ELEMENTS, AppState } from '../../core/core.module';
 
 import {
   ActionSettingsChangeAnimationsElements,
@@ -20,7 +20,7 @@ import {
   ActionSettingsChangeStickyHeader
 } from '../../core/settings/settings.actions';
 
-import { Contact, Package } from '../package.model';
+import { Contact, Package, PackageState } from '../package.model';
 import {
   actionPackageDeleteOne,
   actionPackageUpsertOne
@@ -39,9 +39,14 @@ import {
 })
 export class PackageListComponent implements OnInit {
   routeAnimationsElements = ROUTE_ANIMATIONS_ELEMENTS;
-  // TODO: packages: Package[] = packages;
 
-  // TODO: Fill automatically
+  downloadHref: SafeUrl;
+  uploadedFile: File;
+
+  // Autofill setup
+  categories: Array<string> = [];
+  languages: Array<string> = [];
+  licenses: Array<string> = [];
 
   filteredCategories: Observable<string[]>;
   // = [ "C++", "Fortran", "Java", "Perl", "Python", "R" ]
@@ -105,71 +110,42 @@ export class PackageListComponent implements OnInit {
       new ActionSettingsChangeAnimationsElements({ elementsAnimations: true })
     );
 
-    // TODO: Call _generateDownload(packages)
-
-    let pkges = [];
-    pkges.push(PackageListComponent.createPackage('bar'));
-    pkges.push(PackageListComponent.createPackage('keks'));
-    pkges.push(PackageListComponent.createPackage('foo'));
-    this._generateDownload(pkges);
-
-    this.store.dispatch(actionPackagesRetrieve({}));
+    // TODO: Create subscription for _generateDownload(packages)
 
     this.packages$ = this.store.pipe(select(selectAllPackages));
     this.packageCount$ = this.store.pipe(select(selectTotalPackages));
     this.selectedPackage$ = this.store.pipe(select(selectSelectedPackage));
-
-    this.packages$.subscribe(packages => this._reloadPackages());
-
-    // Autofill setup
-    const categories: Array<string> = this.localStorage.getItem('PACKAGES')[
-      'categories'
-    ];
-    const languages: Array<string> = this.localStorage.getItem('PACKAGES')[
-      'languages'
-    ];
-    const licenses: Array<string> = this.localStorage.getItem('PACKAGES')[
-      'licenses'
-    ];
-
-    this.filteredCategories = this.packageFormGroup
-      .get('category')
-      .valueChanges.pipe(
-        startWith(''),
-        map(value => {
-          const filterValue = value ? value.toLowerCase() : '';
-          return categories.filter(option =>
-            option.toLowerCase().includes(filterValue)
-          );
-        })
-      );
-
-    this.filteredLanguages = this.packageFormGroup
-      .get('language')
-      .valueChanges.pipe(
-        startWith(''),
-        map(value => {
-          const filterValue = value ? value.toLowerCase() : '';
-          return languages.filter(option =>
-            option.toLowerCase().includes(filterValue)
-          );
-        })
-      );
-    this.filteredLicenses = this.packageFormGroup
-      .get('license')
-      .valueChanges.pipe(
-        startWith(''),
-        map(value => {
-          const filterValue = value ? value.toLowerCase() : '';
-          return licenses.filter(option =>
-            option.toLowerCase().includes(filterValue)
-          );
-        })
-      );
   }
-  private _reloadPackages() {
-    // TODO: Delete LocalStorage
-    this.store.dispatch(actionPackagesRetrieve({}));
+
+  private _addPackage(pkg: Package, licenses_counting: Map<string, number>) {
+    const blacklist = [
+      'none',
+      'unknown',
+      'uknown',
+      'other',
+      'various',
+      'custom',
+      'commercial'
+    ];
+
+    if (pkg.category && !this.categories.includes(pkg.category)) {
+      this.categories.push(pkg.category);
+    }
+
+    if (
+      pkg.language &&
+      !blacklist.includes(pkg.language.toLowerCase()) &&
+      !this.languages.includes(pkg.language)
+    ) {
+      this.languages.push(pkg.language);
+    }
+
+    if (pkg.license && !blacklist.includes(pkg.license.toLowerCase())) {
+      let old: number = licenses_counting[pkg.license];
+      licenses_counting[pkg.license] = old ? old + 1 : 1;
+    }
+
+    this.store.dispatch(actionPackageUpsertOne({ pkg }));
   }
 
   openLink(link: string) {
@@ -240,31 +216,60 @@ export class PackageListComponent implements OnInit {
     );
   }
 
-  selectedFile: File;
-
   onFileChanged(event) {
-    this.selectedFile = event.target.files[0];
+    this.uploadedFile = event.target.files[0];
     const fileReader = new FileReader();
-    fileReader.readAsText(this.selectedFile, 'UTF-8');
+    fileReader.readAsText(this.uploadedFile, 'UTF-8');
 
     fileReader.onload = () => {
-      console.log('hello');
-      console.log(JSON.parse(fileReader.result.toString()));
-    };
+      // Parse result
+      const packages: Array<Package> = JSON.parse(fileReader.result.toString());
 
+      // Add new packages to local storage
+      let licenses_counting: Map<string, number> = new Map<string, number>();
+      packages.forEach(pkg => this._addPackage(pkg, licenses_counting));
+
+      // Clean licenses
+      Object.entries(licenses_counting).forEach(([key, value]) => {
+        if (value > 1) {
+          this.licenses.push(key);
+        }
+      });
+
+      // Generate initial download link
+      this._generateDownload(packages);
+
+      // Sort proposal arrays
+      this.categories = this.categories.sort();
+      this.languages = this.languages.sort();
+      this.licenses = this.licenses.sort();
+
+      // Setup auto-fill
+      this.filteredCategories = this._filter('category', this.categories);
+      this.filteredLanguages = this._filter('language', this.languages);
+      this.filteredLicenses = this._filter('license', this.licenses);
+    };
     fileReader.onerror = error => {
       console.log(error);
     };
   }
 
-  downloadHref: SafeUrl;
+  private _filter(input: string, collection: Array<string>) {
+    return this.packageFormGroup.get(input).valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const filterValue = value ? value.toLowerCase() : '';
+        return collection.filter(option =>
+          option.toLowerCase().includes(filterValue)
+        );
+      })
+    );
+  }
 
   private _generateDownload(packages: Package[]) {
     this.downloadHref = this.sanitizer.bypassSecurityTrustUrl(
       'data:text/json;charset=UTF-8,' +
         encodeURIComponent(JSON.stringify(packages))
     );
-    console.log('cheers');
-    console.log(this.downloadHref);
   }
 }

@@ -7,7 +7,7 @@ const routes: Routes = [
   {
     path: '',
     component: PackageListComponent,
-    data: { title: 'anms.examples.menu.crud' }
+    data: { title: 'LCG Packages Editor' }
   }
 ];
 

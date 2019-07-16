@@ -2,6 +2,12 @@ import { createSelector, createFeatureSelector } from '@ngrx/store';
 
 import { selectRouterState, selectPackagesState } from '../core/core.state';
 import { packageAdapter } from './packages.reducer';
+import { PackageState } from './package.model';
+
+export const selectPackages = createSelector(
+  selectPackagesState,
+  (state: PackageState) => state
+);
 
 const {
   selectEntities,
@@ -10,22 +16,27 @@ const {
 } = packageAdapter.getSelectors();
 
 export const selectTotalPackages = createSelector(
-  selectPackagesState,
+  selectPackages,
   selectTotal
 );
 
 export const selectAllPackages = createSelector(
-  selectPackagesState,
+  selectPackages,
   selectAll
 );
 
 export const selectPackagesEntities = createSelector(
-  selectPackagesState,
+  selectPackages,
   selectEntities
 );
 
 export const selectSelectedPackage = createSelector(
   selectPackagesEntities,
   selectRouterState,
-  (entities, params) => params && entities[params.state.params.name]
+  (entities, params) => {
+    console.log('---selectSelectedPackage---');
+    console.log(entities);
+    console.log(params);
+    return params && entities[params.state.params.name];
+  }
 );

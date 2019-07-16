@@ -5,15 +5,15 @@
       <!-- Upload -->
       <input style="display: none" type="file" (change)="onFileChanged($event)" #fileInput>
       <button mat-raised-button color="primary" (click)="fileInput.click()" style="width: 100%;">
-        <fa-icon icon="upload"></fa-icon> 
+        <fa-icon icon="upload" style="float: left;"></fa-icon> 
         Upload <code>packages.json</code>
       </button>
       <!-- Search -->
       <div class="icon-form-field">
-        <mat-icon color="accent">
-          <fa-icon icon="search" color="accent"></fa-icon>
+        <mat-icon color="primary">
+          <fa-icon icon="search" color="primary"></fa-icon>
         </mat-icon>
-        <mat-form-field style="widows: 85%">
+        <mat-form-field style="width: 80%">
           <input matInput type="text" placeholder="Filter package list" aria-label="Search" #searchInput>
         </mat-form-field>
         <button mat-icon-button (click)="searchInput.value = ''">
@@ -56,7 +56,7 @@
       </div>
       <!-- Download -->
       <a mat-raised-button color="primary" style="width: 100%;" title="Download packages.json" [href]="downloadHref" download="packages.json">
-        <fa-icon icon="download"></fa-icon>
+        <fa-icon icon="download" style="float: left;"></fa-icon>
         Download current state as JSON
       </a>
       <!-- <button mat-raised-button color="primary"  style="width: 100%;">
@@ -98,6 +98,7 @@
           <i>{{ selectedPackage.language }}</i>
           <i>{{ selectedPackage.license }}</i>
           <p>{{ selectedPackage.homepage }}</p>
+          <hr/>
           <a href="http://lcginfo.cern.ch/pkg/{{ selectedPackage.name }}/" target="_blank">&rarr; open in <strong>LCG Info</strong></a>
         </div>
 

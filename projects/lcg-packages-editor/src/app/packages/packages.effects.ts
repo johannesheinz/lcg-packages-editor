@@ -2,28 +2,16 @@ import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import {
-  tap,
-  withLatestFrom,
-  map,
-  catchError,
-  debounceTime,
-  switchMap
-} from 'rxjs/operators';
-import { of } from 'rxjs';
+import { tap, withLatestFrom } from 'rxjs/operators';
 
 import { LocalStorageService } from '../core/local-storage/local-storage.service';
 import { selectPackagesState } from '../core/core.state';
 
+import { State } from './package.model';
 import {
   actionPackageDeleteOne,
-  actionPackageUpsertOne,
-  actionPackagesRetrieve,
-  actionPackagesRetrieveSuccess,
-  actionPackagesRetrieveError
+  actionPackageUpsertOne
 } from './packages.actions';
-
-import { State } from './package.model';
 
 @Injectable()
 export class PackagesEffects {
